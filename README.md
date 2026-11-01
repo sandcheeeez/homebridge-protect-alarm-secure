@@ -50,7 +50,9 @@ Pin to a tag or commit, not a branch.
   "name": "Security System",
   "controller": "192.168.1.1",
   "apiKey": "…",
-  "certFingerprint": "AB:CD:…"
+  "certFingerprint": "AB:CD:…",
+  "homeProfileName": "Arm Stay",
+  "awayProfileName": "Arm Away"
 }
 ```
 
@@ -87,6 +89,6 @@ pin lives in `<homebridge storage>/homebridge-protect-alarm-secure-pins.json`.
 
 ## Tests
 
-`npm test` runs the plugin against a fake console over real HTTPS, covering
+Tested on Node 22 and 24. `npm test` runs the plugin against a fake console over real HTTPS, covering
 pinning and MITM refusal, failure reporting, verification, outage recovery and
 mode mapping.

@@ -160,6 +160,27 @@ test("Home maps to a Home profile when one exists", async () => {
   } finally { h.stop(); await closeServer(c.server); }
 });
 
+test("custom names: 'Arm Stay' → Home, 'Arm Away' → Away, Night hidden", async () => {
+  const c = await startConsole();
+  c.state.profiles = [{ id: "p-stay", name: "Arm Stay" }, { id: "p-away2", name: "Arm Away" }];
+  const h = startPlugin({ controller: `127.0.0.1:${c.port}`, apiKey: API_KEY, pollInterval: 2,
+    homeProfileName: "Arm Stay", awayProfileName: "Arm Away" }, tmp());
+  try {
+    await until(() => h.alarm.known);
+    assert.deepStrictEqual(h.target().props.validValues, [T.STAY_ARM, T.AWAY_ARM, T.DISARM]);
+    await h.target().set(T.STAY_ARM);
+    assert.strictEqual(c.state.armProfileId, "p-stay");
+    assert.strictEqual(h.current().get(), S.STAY_ARM);
+    await h.target().set(T.AWAY_ARM);
+    assert.strictEqual(c.state.armProfileId, "p-away2");
+    assert.strictEqual(h.current().get(), S.AWAY_ARM);
+    // armed from a key fob / Protect app is reflected too
+    await h.target().set(T.DISARM);
+    Object.assign(c.state, { status: "armed", armProfileId: "p-stay" });
+    await until(() => h.current().value === S.STAY_ARM, 5000);
+  } finally { h.stop(); await closeServer(c.server); }
+});
+
 test("certificate swap (MITM) is refused and the API key is never sent", async () => {
   const good = await startConsole("good");
   const storage = tmp();
