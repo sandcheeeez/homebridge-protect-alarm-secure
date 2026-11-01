@@ -30,17 +30,25 @@ Don't create it from your owner account.
 
 ## 2. Install
 
-On the Homebridge host, uninstall the original `homebridge-protect-alarm` first.
+Uninstall the original `homebridge-protect-alarm` first if you have it.
+
+Pin to an exact **commit** (a tag can be moved and a commit can't). The GitHub
+tarball URL works without `git` in the container.
+
+**Docker (`homebridge/homebridge` image)**: in the Homebridge UI, open the
+terminal (⋮ menu → Terminal; enable it in UI settings if hidden) and run:
 
 ```sh
-# from a git remote you control
-npm install -g git+https://github.com/<you>/homebridge-protect-alarm-secure.git#v1.1.0
-# or copy this folder over and:
-npm install -g /path/to/homebridge-protect-alarm-secure
+cd /homebridge
+npm install --save https://github.com/sandcheeeez/homebridge-protect-alarm-secure/archive/<commit-sha>.tar.gz
 ```
 
-For the Docker / homebridge-config-ui image, run the command in the UI's terminal.
-Pin to a tag or commit, not a branch.
+Then restart Homebridge. `/homebridge` is the container's persistent volume, so
+the plugin survives container updates.
+
+**Other installs**: `npm install -g <same URL>`.
+
+To update later, run the same command with the new commit SHA.
 
 ## 3. Configure
 
