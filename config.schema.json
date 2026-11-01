@@ -1,0 +1,53 @@
+{
+  "pluginAlias": "ProtectAlarmSecure",
+  "pluginType": "platform",
+  "singular": true,
+  "headerDisplay": "UniFi Protect alarm as a HomeKit Security System. Create the API key from a **dedicated, limited UniFi user** (see README), not your owner account.",
+  "footerDisplay": "Only HomeKit modes that match an arm profile are shown in the Home app. The console certificate is pinned on first connection; check the Homebridge log for its fingerprint.",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": { "title": "Accessory Name", "type": "string", "default": "Security System", "required": true },
+      "controller": {
+        "title": "Console IP / Host", "type": "string", "placeholder": "192.168.1.1", "required": true,
+        "description": "IP address of your UniFi OS console (preferred over a hostname). Optional :port."
+      },
+      "apiKey": {
+        "title": "API Key", "type": "string", "required": true,
+        "description": "UniFi OS API key (Settings → Control Plane → Integrations), created while logged in as the limited user."
+      },
+      "awayProfileName": { "title": "Away → Profile Name", "type": "string", "default": "Away" },
+      "nightProfileName": { "title": "Night → Profile Name", "type": "string", "default": "Night" },
+      "homeProfileName": {
+        "title": "Home → Profile Name", "type": "string", "default": "Home",
+        "description": "If no profile has this name, Home is hidden in the Home app (it no longer silently disarms)."
+      },
+      "pollInterval": {
+        "title": "Poll Interval (seconds)", "type": "integer", "default": 5, "minimum": 2, "maximum": 300
+      },
+      "certFingerprint": {
+        "title": "Console Certificate SHA-256 Fingerprint", "type": "string",
+        "placeholder": "AB:CD:...",
+        "description": "Optional but recommended. If empty, the certificate seen on first connection is pinned automatically."
+      },
+      "tlsMode": {
+        "title": "TLS Verification", "type": "string", "default": "pin",
+        "oneOf": [
+          { "title": "Pin console certificate (default; works with UniFi's self-signed cert)", "enum": ["pin"] },
+          { "title": "Trusted CA certificate (only if your console has a real certificate for its hostname)", "enum": ["ca"] }
+        ]
+      },
+      "awayArmProfileId": { "title": "Away Profile ID", "type": "string" },
+      "nightArmProfileId": { "title": "Night Profile ID", "type": "string" },
+      "homeArmProfileId": { "title": "Home Profile ID", "type": "string" }
+    }
+  },
+  "layout": [
+    "name", "controller", "apiKey",
+    "awayProfileName", "nightProfileName", "homeProfileName",
+    "pollInterval",
+    { "type": "fieldset", "title": "Security", "expandable": true, "expanded": false, "items": ["certFingerprint", "tlsMode"] },
+    { "type": "fieldset", "title": "Advanced: explicit profile IDs", "expandable": true, "expanded": false,
+      "items": ["awayArmProfileId", "nightArmProfileId", "homeArmProfileId"] }
+  ]
+}
