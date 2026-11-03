@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.2.0, 2026-11-03
+
+### Global Alarm Manager support
+- New **Global mode** for consoles with an Alarm Hub / UniFi alarm sensors, where
+  the official integration API refuses alarm requests. Logs in with a local-only
+  Super Admin and uses UniFi OS's Alarm Manager API, following
+  [violuke/ha_unifi_protect_alarm_bridge](https://github.com/violuke/ha_unifi_protect_alarm_bridge) (MIT).
+- **Live updates** over Protect's update websocket (instant arm/disarm/breach),
+  with polling as a safety net: every 60s while live updates work, every 10s
+  while they don't.
+- Arming one mode disarms any other active profile first; Off disarms every
+  active profile. Each profile is armed by ID (no "selected profile" side effect).
+- Exit delay shows as HomeKit's "Arming…"; breached shows Alarm Triggered.
+- An armed profile that isn't mapped to a HomeKit mode shows as Away, and the
+  log names the real profile.
+- The login, session cookie and live-update connection all go through the same
+  certificate pinning, so the password is never sent to an unverified console.
+- One login at a time, re-login only when the session expires, and a 5-minute
+  back-off on bad credentials, two-factor accounts or rate limiting, so the
+  account isn't locked out.
+- API-key mode now explains Global mode when the console rejects the key for it.
+
+### Internal
+- Split into `lib/` modules (TLS pinning, HTTP, WebSocket client, backends).
+  Still no third-party dependencies.
+
 ## 1.1.0 (fork), 2026-11-01
 
 Forked from `homebridge-protect-alarm` 1.0.0 (npm sha1 a51b7a89). The upstream

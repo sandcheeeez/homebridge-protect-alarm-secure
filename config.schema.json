@@ -2,52 +2,149 @@
   "pluginAlias": "ProtectAlarmSecure",
   "pluginType": "platform",
   "singular": true,
-  "headerDisplay": "UniFi Protect alarm as a HomeKit Security System. Create the API key from a **dedicated, limited UniFi user** (see README), not your owner account.",
+  "headerDisplay": "UniFi Protect alarm as a HomeKit Security System. **Have an Alarm Hub or UniFi alarm sensors?** Use the Global-mode login. Otherwise use an API key. See the README.",
   "footerDisplay": "Only HomeKit modes that match an arm profile are shown in the Home app. The console certificate is pinned on first connection; check the Homebridge log for its fingerprint.",
   "schema": {
     "type": "object",
     "properties": {
-      "name": { "title": "Accessory Name", "type": "string", "default": "Security System", "required": true },
+      "name": {
+        "title": "Accessory Name",
+        "type": "string",
+        "default": "Security System",
+        "required": true
+      },
       "controller": {
-        "title": "Console IP / Host", "type": "string", "placeholder": "192.168.1.1", "required": true,
-        "description": "IP address of your UniFi OS console (preferred over a hostname). Optional :port."
+        "title": "Console IP / Host",
+        "type": "string",
+        "placeholder": "192.168.1.1",
+        "required": true,
+        "description": "IP address of the console running **Protect** (e.g. your NVR), not your gateway. Optional :port."
+      },
+      "username": {
+        "title": "Username",
+        "type": "string",
+        "description": "Global mode: a local-only Super Admin (Admin Privileges: Full) without two-factor login."
+      },
+      "password": {
+        "title": "Password",
+        "type": "string",
+        "x-schema-form": {
+          "type": "password"
+        }
       },
       "apiKey": {
-        "title": "API Key", "type": "string", "required": true,
-        "description": "UniFi OS API key (Settings → Control Plane → Integrations), created while logged in as the limited user."
+        "title": "API Key",
+        "type": "string",
+        "description": "Only when Alarm Manager is NOT in Global mode. A local key created on the Protect console."
       },
-      "awayProfileName": { "title": "Away → Profile Name", "type": "string", "default": "Away" },
-      "nightProfileName": { "title": "Night → Profile Name", "type": "string", "default": "Night" },
+      "awayProfileName": {
+        "title": "Away → Profile Name",
+        "type": "string",
+        "default": "Away"
+      },
+      "nightProfileName": {
+        "title": "Night → Profile Name",
+        "type": "string",
+        "default": "Night"
+      },
       "homeProfileName": {
-        "title": "Home → Profile Name", "type": "string", "default": "Home",
+        "title": "Home → Profile Name",
+        "type": "string",
+        "default": "Home",
         "description": "If no profile has this name, Home is hidden in the Home app (it no longer silently disarms)."
       },
       "pollInterval": {
-        "title": "Poll Interval (seconds)", "type": "integer", "default": 5, "minimum": 2, "maximum": 300
+        "title": "Poll Interval, API-key mode (seconds)",
+        "type": "integer",
+        "default": 5,
+        "minimum": 2,
+        "maximum": 300
       },
       "certFingerprint": {
-        "title": "Console Certificate SHA-256 Fingerprint", "type": "string",
+        "title": "Console Certificate SHA-256 Fingerprint",
+        "type": "string",
         "placeholder": "AB:CD:...",
         "description": "Optional but recommended. If empty, the certificate seen on first connection is pinned automatically."
       },
       "tlsMode": {
-        "title": "TLS Verification", "type": "string", "default": "pin",
+        "title": "TLS Verification",
+        "type": "string",
+        "default": "pin",
         "oneOf": [
-          { "title": "Pin console certificate (default; works with UniFi's self-signed cert)", "enum": ["pin"] },
-          { "title": "Trusted CA certificate (only if your console has a real certificate for its hostname)", "enum": ["ca"] }
+          {
+            "title": "Pin console certificate (default; works with UniFi's self-signed cert)",
+            "enum": [
+              "pin"
+            ]
+          },
+          {
+            "title": "Trusted CA certificate (only if your console has a real certificate for its hostname)",
+            "enum": [
+              "ca"
+            ]
+          }
         ]
       },
-      "awayArmProfileId": { "title": "Away Profile ID", "type": "string" },
-      "nightArmProfileId": { "title": "Night Profile ID", "type": "string" },
-      "homeArmProfileId": { "title": "Home Profile ID", "type": "string" }
+      "awayArmProfileId": {
+        "title": "Away Profile ID",
+        "type": "string"
+      },
+      "nightArmProfileId": {
+        "title": "Night Profile ID",
+        "type": "string"
+      },
+      "homeArmProfileId": {
+        "title": "Home Profile ID",
+        "type": "string"
+      }
     }
   },
   "layout": [
-    "name", "controller", "apiKey",
-    "awayProfileName", "nightProfileName", "homeProfileName",
-    "pollInterval",
-    { "type": "fieldset", "title": "Security", "expandable": true, "expanded": false, "items": ["certFingerprint", "tlsMode"] },
-    { "type": "fieldset", "title": "Advanced: explicit profile IDs", "expandable": true, "expanded": false,
-      "items": ["awayArmProfileId", "nightArmProfileId", "homeArmProfileId"] }
+    "name",
+    "controller",
+    {
+      "type": "fieldset",
+      "title": "Global mode (Alarm Hub / UniFi alarm sensors)",
+      "expandable": true,
+      "expanded": true,
+      "items": [
+        "username",
+        "password"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "API key mode (no alarm hardware)",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "apiKey",
+        "pollInterval"
+      ]
+    },
+    "awayProfileName",
+    "nightProfileName",
+    "homeProfileName",
+    {
+      "type": "fieldset",
+      "title": "Security",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "certFingerprint",
+        "tlsMode"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Advanced: explicit profile IDs",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "awayArmProfileId",
+        "nightArmProfileId",
+        "homeArmProfileId"
+      ]
+    }
   ]
 }

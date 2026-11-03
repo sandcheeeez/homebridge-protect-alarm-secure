@@ -1,9 +1,9 @@
 {
   "displayName": "HomeKit Protect Alarm (Secure)",
   "name": "homebridge-protect-alarm-secure",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
-  "description": "Hardened fork of homebridge-protect-alarm: UniFi Protect arm profiles as a HomeKit Security System, with certificate pinning, honest failure reporting and auto-recovery. No dependencies.",
+  "description": "Hardened fork of homebridge-protect-alarm: UniFi Protect arm profiles as a HomeKit Security System, including Global Alarm Manager (alarm hub/sensors) with live updates. Certificate pinning, honest failure reporting, no dependencies.",
   "license": "MIT",
   "main": "index.js",
   "engines": {
@@ -13,6 +13,7 @@
   "dependencies": {},
   "files": [
     "index.js",
+    "lib",
     "config.schema.json",
     "README.md",
     "CHANGELOG.md",
@@ -28,6 +29,6 @@
     "security-system"
   ],
   "scripts": {
-    "test": "node --test --test-concurrency=1 test/plugin.test.js"
+    "test": "node --test --test-concurrency=1 test/global.test.js test/plugin.test.js"
   }
 }

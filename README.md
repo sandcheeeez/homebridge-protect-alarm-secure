@@ -1,7 +1,10 @@
 # homebridge-protect-alarm-secure
 
 Hardened fork of [homebridge-protect-alarm](https://github.com/Mac2100/homebridge-protect-alarm)
-(MIT). It shows your UniFi Protect arm profiles in HomeKit as a Security System.
+(MIT). It shows your UniFi Protect arm profiles in HomeKit as a Security System,
+including Protect's **Global Alarm Manager** (Alarm Hub and UniFi alarm sensors),
+with live updates. Global-mode support follows
+[ha_unifi_protect_alarm_bridge](https://github.com/violuke/ha_unifi_protect_alarm_bridge) (MIT).
 See [CHANGELOG.md](CHANGELOG.md) for what changed and why.
 
 | HomeKit | UniFi Protect |
@@ -9,24 +12,34 @@ See [CHANGELOG.md](CHANGELOG.md) for what changed and why.
 | Away | arm profile named "Away" (configurable) |
 | Night | arm profile named "Night" |
 | Home | arm profile named "Home", hidden if none exists |
-| Off | disarm |
-| Alarm Triggered | console reports an alarm going off |
+| Off | disarm every active profile |
+| Arming… | profile is in its exit delay |
+| Alarm Triggered | profile is breached |
 
-Arming works by *selecting* the profile on the console and then enabling it,
-because the Protect API arms whichever profile is selected. The console keeps
-that selection, so a key fob or the Protect app will next arm the profile you
-last used from HomeKit.
+Only one profile is active at a time: choosing a mode disarms any other active
+profile first. In API key mode, arming *selects* the profile on the console and
+then enables it, so the Protect app's plain "Arm" will next use that profile.
 
-## 1. Create a limited UniFi user for the API key
+## 1. Pick a mode
 
-A UniFi OS API key carries **all** the permissions of the user who creates it.
-Don't create it from your owner account.
+**Global mode: you have an Alarm Hub or UniFi alarm sensors.** Adopting alarm
+hardware switches Protect's Alarm Manager to Global mode, where the official
+API can't arm or disarm. This plugin then logs in like the Protect web app does.
 
-1. UniFi OS → Admins & Users → add a **local-only** admin, e.g. `homebridge`.
-2. Give it **Protect** access only (enough to manage alarms) and **no**
-   Network/other app access.
-3. Log in as that user → Settings → Control Plane → Integrations → create API key.
-4. Test that arming works. If it gets HTTP 401/403, raise its Protect role one step.
+1. In UniFi OS → Admins & Users, add an admin that is **local access only**,
+   with **no two-factor login**.
+2. Set **Admin Privileges: Full** (Super Admin). Alarm Manager refuses custom
+   roles, including Protect "Full".
+3. Put its username and password in the plugin config.
+
+This is an unofficial API, so a Protect update could change it. The plugin says
+so clearly in the log if that happens. A Super Admin password lives in your
+Homebridge config, so keep the Homebridge UI password-protected and don't use
+this account for anything else.
+
+**API key mode: no alarm hardware.** Create a local API key on the Protect
+console (`https://<console-ip>/protect/integrations/`). Site Manager (cloud)
+keys don't work.
 
 ## 2. Install
 
@@ -57,15 +70,17 @@ To update later, run the same command with the new commit SHA.
   "platform": "ProtectAlarmSecure",
   "name": "Security System",
   "controller": "192.168.1.1",
-  "apiKey": "…",
+  "username": "hb-alarm",
+  "password": "…",
   "certFingerprint": "AB:CD:…",
   "homeProfileName": "Arm Stay",
   "awayProfileName": "Arm Away"
 }
 ```
 
-Use the console's **IP address**. Optional fields: `awayProfileName`,
-`nightProfileName`, `homeProfileName`, `pollInterval` (2–300 s, default 5),
+Use the IP of the console running **Protect** (your NVR, not your gateway).
+For API key mode, use `"apiKey"` instead of `username`/`password`. Optional fields: `awayProfileName`,
+`nightProfileName`, `homeProfileName`, `pollInterval` (API key mode, 2–300 s, default 5),
 `tlsMode` (`pin` default, or `ca` if the console has a real certificate for its
 hostname), and `*ArmProfileId` to pin exact profile IDs.
 
@@ -87,16 +102,14 @@ pin lives in `<homebridge storage>/homebridge-protect-alarm-secure-pins.json`.
 
 ## Limitations
 
-- Uses the official Protect integration API. If you have UniFi alarm hardware
-  (sensors, hub, fobs), Alarm Manager may run in "Global mode", which this API
-  reportedly can't control. The log will say so if the console returns no
-  profiles or a 404.
-- The status strings that mean "alarm triggered" aren't documented. Unknown
-  statuses are logged. Please note them.
+- Global mode uses undocumented UniFi OS APIs (see above).
+- HomeKit can't show custom state names. An armed profile that isn't mapped to
+  Home/Away/Night shows as Away, and the Homebridge log names it.
 - Anyone in your Apple Home with control access can disarm.
 
 ## Tests
 
-Tested on Node 22 and 24. `npm test` runs the plugin against a fake console over real HTTPS, covering
-pinning and MITM refusal, failure reporting, verification, outage recovery and
-mode mapping.
+Tested on Node 24. `npm test` runs the plugin against fake consoles (API-key and
+Global mode, including the live-update websocket) over real HTTPS, covering
+pinning and MITM refusal, login/session handling, failure reporting,
+verification, outage recovery and mode mapping.
