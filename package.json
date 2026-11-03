@@ -1,7 +1,7 @@
 {
   "displayName": "HomeKit Protect Alarm (Secure)",
   "name": "homebridge-protect-alarm-secure",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "private": true,
   "description": "Hardened fork of homebridge-protect-alarm: UniFi Protect arm profiles as a HomeKit Security System, including Global Alarm Manager (alarm hub/sensors) with live updates. Certificate pinning, honest failure reporting, no dependencies.",
   "license": "MIT",

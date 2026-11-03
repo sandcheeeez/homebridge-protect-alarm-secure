@@ -8,10 +8,11 @@
     "type": "object",
     "properties": {
       "name": {
-        "title": "Accessory Name",
+        "title": "Name",
         "type": "string",
-        "default": "Security System",
-        "required": true
+        "default": "Protect Alarm",
+        "required": true,
+        "description": "Shown at the start of this plugin's log lines, and used as the accessory name when it's first added to HomeKit."
       },
       "controller": {
         "title": "Console IP / Host",

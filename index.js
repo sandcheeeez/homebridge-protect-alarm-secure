@@ -183,7 +183,7 @@ class ProtectAlarm {
         if (!fp) {
           fp = await readPeerFingerprint(host, port);
           store.set(label, fp);
-          this.log.warn(`[${this.name}] First connection: pinned console certificate SHA-256 ${prettyFingerprint(fp)}. ` +
+          this.log.warn(`First connection: pinned console certificate SHA-256 ${prettyFingerprint(fp)}. ` +
             "Verify it matches your console (see README), then optionally copy it into 'certFingerprint'.");
         }
       }
@@ -192,18 +192,18 @@ class ProtectAlarm {
 
     let backend;
     if (this.useLogin) {
-      if (this.config.apiKey) this.log.info(`[${this.name}] Both a login and an API key are set; using the login (Global mode).`);
+      if (this.config.apiKey) this.log.info(`Both a login and an API key are set; using the login (Global mode).`);
       backend = new GlobalBackend({ host, port, agent: this.agent, username: this.config.username, password: this.config.password });
       const info = await backend.consoleInfo();
       if (info.globalMode === false) {
-        this.log.warn(`[${this.name}] Alarm Manager is not in Global mode on this console. Global-mode login works ` +
+        this.log.warn(`Alarm Manager is not in Global mode on this console. Global-mode login works ` +
           "only in Global mode; use an API key instead.");
       }
     } else {
       backend = new KeyBackend({ host, port, agent: this.agent, apiKey: this.config.apiKey });
     }
     this.backend = backend; // only once fully connected
-    this.log.info(`[${this.name}] Connected to ${label} (${backend.mode}).`);
+    this.log.info(`Connected to ${label} (${backend.mode}).`);
     if (backend.supportsPush) this.pushLoop(backend);
   }
 
@@ -234,7 +234,7 @@ class ProtectAlarm {
       try {
         if (!this.backend) await this.connect();
         if (!this.busy) await this.refresh();
-        if (this.failures > 0) this.log.info(`[${this.name}] Connection to console restored.`);
+        if (this.failures > 0) this.log.info(`Connection to console restored.`);
         this.setFailures(0);
         backoff = 0;
         wait = this.pollInterval();
@@ -251,7 +251,7 @@ class ProtectAlarm {
           : Math.min(Math.max(backoff * 2, this.pollInterval()), MAX_BACKOFF_MS);
         wait = backoff;
         const level = this.failures === 1 || this.failures % 20 === 0 || err.fatalAuth || err.fatalConfig ? "error" : "debug";
-        this.log[level](`[${this.name}] ${err.message} (retrying in ${Math.round(wait / 1000)}s)`);
+        this.log[level](`${err.message} (retrying in ${Math.round(wait / 1000)}s)`);
       }
       await new Promise((resolve) => {
         const t = setTimeout(() => { this.timers.delete(t); this.wakePoll = null; resolve(); }, wait);
@@ -266,11 +266,11 @@ class ProtectAlarm {
     for (const s of rawStatuses) {
       if (!this.loggedStates.has(s)) {
         this.loggedStates.add(s);
-        if (!KNOWN_STATES.has(s)) this.log.warn(`[${this.name}] Unrecognised alarm state "${s}" (treated as disarmed). Please report it.`);
+        if (!KNOWN_STATES.has(s)) this.log.warn(`Unrecognised alarm state "${s}" (treated as disarmed). Please report it.`);
       }
     }
     if (!profiles.length) {
-      this.log.warn(`[${this.name}] Console returned no arm profiles. Create at least one in Protect's Alarm Manager.`);
+      this.log.warn(`Console returned no arm profiles. Create at least one in Protect's Alarm Manager.`);
     }
     this.applyProfiles(profiles, true);
   }
@@ -289,7 +289,7 @@ class ProtectAlarm {
         this.wsConn = conn;
         established = true;
         this.setPushConnected(true);
-        if (warned) this.log.info(`[${this.name}] Live updates reconnected.`);
+        if (warned) this.log.info(`Live updates reconnected.`);
         warned = false;
         this.resyncSoon(); // catch anything missed while disconnected
         await new Promise((resolve) => {
@@ -303,13 +303,13 @@ class ProtectAlarm {
         }).then((reason) => {
           if (!this.stopped && !warned) {
             warned = true;
-            this.log.warn(`[${this.name}] Live updates disconnected (${reason}); polling every ${POLL_PUSH_DOWN_MS / 1000}s until they reconnect.`);
+            this.log.warn(`Live updates disconnected (${reason}); polling every ${POLL_PUSH_DOWN_MS / 1000}s until they reconnect.`);
           }
         });
       } catch (err) {
         if (!warned && !this.stopped) {
           warned = true;
-          this.log.warn(`[${this.name}] Live updates unavailable (${err.message}); polling every ${POLL_PUSH_DOWN_MS / 1000}s.`);
+          this.log.warn(`Live updates unavailable (${err.message}); polling every ${POLL_PUSH_DOWN_MS / 1000}s.`);
         }
       }
       this.wsConn = null;
@@ -344,13 +344,13 @@ class ProtectAlarm {
     const primary = this.primaryActive();
     if (primary && this.modeFor(primary.id) === null && !this.warnedUnmapped.has(primary.id)) {
       this.warnedUnmapped.add(primary.id);
-      this.log.warn(`[${this.name}] Arm profile "${primary.title}" is ${primary.state} but isn't mapped to a HomeKit ` +
+      this.log.warn(`Arm profile "${primary.title}" is ${primary.state} but isn't mapped to a HomeKit ` +
         "mode, so HomeKit shows it as Away.");
     }
     if (!primary) this.warnedUnmapped.clear();
 
     if (this.snapshot() !== before) {
-      this.log.info(`[${this.name}] State: ${this.describe()}`);
+      this.log.info(`State: ${this.describe()}`);
       this.pushState();
     }
   }
@@ -371,7 +371,7 @@ class ProtectAlarm {
     this.mappingLogged = key;
     const show = (m) => `${this.MODE_NAMES[m]} → ${this.profileIds[m] ? `"${this.titleOf(this.profileIds[m]) || this.profileNames[m]}"` : "not mapped"}`;
     const available = [...this.profiles.values()].filter((p) => p.id !== UNKNOWN_ACTIVE).map((p) => `"${p.title}"`);
-    this.log.info(`[${this.name}] Profiles: ${this.MODES.map(show).join(", ")}. On console: ${available.join(", ") || "none"}`);
+    this.log.info(`Profiles: ${this.MODES.map(show).join(", ")}. On console: ${available.join(", ") || "none"}`);
 
     const valid = [...this.MODES.filter((m) => this.profileIds[m]), this.T.DISARM].sort();
     this.service.getCharacteristic(this.T).setProps({ validValues: valid });
@@ -455,7 +455,7 @@ class ProtectAlarm {
       this.service.updateCharacteristic(F, isFault ? F.GENERAL_FAULT : F.NO_FAULT);
       if (isFault) {
         this.known = false;
-        this.log.error(`[${this.name}] Console unreachable; HomeKit will show No Response until it recovers.`);
+        this.log.error(`Console unreachable; HomeKit will show No Response until it recovers.`);
       }
     }
   }
@@ -491,7 +491,7 @@ class ProtectAlarm {
       const global = this.backend instanceof GlobalBackend;
 
       if (value === this.T.DISARM) {
-        this.log.info(`[${this.name}] HomeKit requested Off.`);
+        this.log.info(`HomeKit requested Off.`);
         this.lastTarget = this.T.DISARM;
         if (global) {
           for (const p of this.active()) this.applyProfiles([await this.backend.disarm(p.id)], false);
@@ -503,7 +503,7 @@ class ProtectAlarm {
         const id = this.profileIds[value];
         if (!id) throw new Error(`no arm profile mapped to HomeKit "${label}"`);
         const title = this.titleOf(id) || this.profileNames[value];
-        this.log.info(`[${this.name}] HomeKit requested ${label} (profile "${title}").`);
+        this.log.info(`HomeKit requested ${label} (profile "${title}").`);
         this.lastTarget = value;
         if (global) {
           // Only one profile active at a time: disarm any other first.
@@ -522,9 +522,9 @@ class ProtectAlarm {
           return others.length === 0 && ((target && ACTIVE.has(target.state)) || (unknown && ACTIVE.has(unknown.state)));
         }, `arming "${title}"`);
       }
-      this.log.info(`[${this.name}] Confirmed: ${this.describe()}.`);
+      this.log.info(`Confirmed: ${this.describe()}.`);
     } catch (err) {
-      this.log.error(`[${this.name}] ${label} failed: ${err.message}`);
+      this.log.error(`${label} failed: ${err.message}`);
       // Snap HomeKit back to the real state once the error has been returned.
       const t = setTimeout(() => {
         this.timers.delete(t);

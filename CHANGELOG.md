@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.1, 2026-11-03
+
+- Log lines no longer repeat the plugin name (Homebridge already adds it).
+- The Name field now defaults to "Protect Alarm" and explains that it's the log prefix.
+
 ## 1.2.0, 2026-11-03
 
 ### Global Alarm Manager support
